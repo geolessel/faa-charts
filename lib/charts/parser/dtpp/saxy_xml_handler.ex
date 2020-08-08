@@ -15,7 +15,12 @@ defmodule FaaCharts.Parser.DTPP.SaxyXMLHandler do
   end
 
   def handle_event(:end_document, _data, state) do
-    {:ok, state}
+    {:ok,
+     state
+     |> Map.put(:airports, Enum.reverse(state.airports))
+     |> Map.put(:charts, Enum.reverse(state.charts))
+     |> Map.put(:cities, Enum.reverse(state.cities))
+     |> Map.put(:states, Enum.reverse(state.states))}
   end
 
   def handle_event(:start_element, {"digital_tpp", attrs}, state) do
