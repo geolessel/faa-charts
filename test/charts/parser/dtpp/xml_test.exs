@@ -1,6 +1,6 @@
-defmodule Charts.Import.DTPP.XMLTest do
+defmodule Charts.Parser.DTPP.XMLTest do
   use ExUnit.Case, async: true
-  doctest Charts.Import.DTPP.XML
+  doctest Charts.Parser.DTPP.XML
 
   setup do
     xml = File.stream!("./test/support/dtpp-example.xml", [], 2048)
@@ -10,7 +10,7 @@ defmodule Charts.Import.DTPP.XMLTest do
   describe "parse_stream" do
     test "finds the dtpp", %{xml_stream: xml_stream} do
       dtpp =
-        with {:ok, result} <- Charts.Import.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, result} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
           result
           |> Map.get(:dtpp)
         end
@@ -26,7 +26,7 @@ defmodule Charts.Import.DTPP.XMLTest do
       expected = ["AR", "CA"]
 
       states =
-        with {:ok, result} <- Charts.Import.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, result} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
           result
           |> Map.get(:states)
           |> Enum.map(& &1.abbreviation)
@@ -40,7 +40,7 @@ defmodule Charts.Import.DTPP.XMLTest do
       expected = ["CARLSBAD", "CONWAY", "LITTLE ROCK", "OCEANSIDE"]
 
       actual =
-        with {:ok, result} <- Charts.Import.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, result} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
           result
           |> Map.get(:cities)
           |> Enum.map(& &1.name)
@@ -52,7 +52,7 @@ defmodule Charts.Import.DTPP.XMLTest do
 
     test "associates cities with states", %{xml_stream: xml_stream} do
       oceanside =
-        with {:ok, %{cities: cities}} <- Charts.Import.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, %{cities: cities}} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
           cities
           |> Enum.find(&(&1.name == "OCEANSIDE"))
         end
@@ -70,7 +70,7 @@ defmodule Charts.Import.DTPP.XMLTest do
       ]
 
       actual =
-        with {:ok, result} <- Charts.Import.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, result} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
           result
           |> Map.get(:airports)
           |> Enum.map(& &1.name)
@@ -82,7 +82,7 @@ defmodule Charts.Import.DTPP.XMLTest do
 
     test "associates airports with cities", %{xml_stream: xml_stream} do
       conway =
-        with {:ok, %{airports: airports}} <- Charts.Import.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, %{airports: airports}} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
           airports
           |> Enum.find(&(&1.icao_ident == "KCXW"))
         end
@@ -92,7 +92,7 @@ defmodule Charts.Import.DTPP.XMLTest do
 
     test "finds the charts and associates them with airport and dtpp", %{xml_stream: xml_stream} do
       chart =
-        with {:ok, %{charts: charts}} <- Charts.Import.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, %{charts: charts}} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
           charts
           |> Enum.find(&(&1.pdf_name == "00233IL4L.PDF"))
         end

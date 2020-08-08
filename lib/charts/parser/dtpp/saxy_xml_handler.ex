@@ -1,4 +1,4 @@
-defmodule Charts.Import.SaxyXMLHandler do
+defmodule Charts.Parser.DTPP.SaxyXMLHandler do
   @behaviour Saxy.Handler
   @initial_state %{
     airports: [],
