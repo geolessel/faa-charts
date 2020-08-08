@@ -1,4 +1,4 @@
-defmodule Charts.DTPP do
+defmodule FaaCharts.DTPP do
   defstruct [
     :cycle,
     :from_edate,

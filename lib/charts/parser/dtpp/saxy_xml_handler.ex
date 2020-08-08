@@ -1,4 +1,4 @@
-defmodule Charts.Parser.DTPP.SaxyXMLHandler do
+defmodule FaaCharts.Parser.DTPP.SaxyXMLHandler do
   @behaviour Saxy.Handler
   @initial_state %{
     airports: [],
@@ -7,6 +7,8 @@ defmodule Charts.Parser.DTPP.SaxyXMLHandler do
     states: [],
     stack: []
   }
+
+  alias FaaCharts.{Airport, Chart, City, DTPP, State}
 
   def handle_event(:start_document, _prolog, _state) do
     {:ok, @initial_state}
@@ -19,7 +21,7 @@ defmodule Charts.Parser.DTPP.SaxyXMLHandler do
   def handle_event(:start_element, {"digital_tpp", attrs}, state) do
     attrs = Enum.into(attrs, %{})
 
-    dtpp = %Charts.DTPP{
+    dtpp = %DTPP{
       cycle: attrs["cycle"],
       from_edate: attrs["from_edate"],
       to_edate: attrs["to_edate"]
@@ -35,7 +37,7 @@ defmodule Charts.Parser.DTPP.SaxyXMLHandler do
 
   def handle_event(:start_element, {"state_code", attrs}, state) do
     attrs = Enum.into(attrs, %{})
-    st = %Charts.State{name: attrs["state_fullname"], abbreviation: attrs["ID"]}
+    st = %State{name: attrs["state_fullname"], abbreviation: attrs["ID"]}
 
     state =
       state
@@ -47,7 +49,7 @@ defmodule Charts.Parser.DTPP.SaxyXMLHandler do
 
   def handle_event(:start_element, {"city_name", attrs}, state) do
     attrs = Enum.into(attrs, %{})
-    city = %Charts.City{name: attrs["ID"], state: hd(state.stack), volume: attrs["volume"]}
+    city = %City{name: attrs["ID"], state: hd(state.stack), volume: attrs["volume"]}
 
     state =
       state
@@ -60,7 +62,7 @@ defmodule Charts.Parser.DTPP.SaxyXMLHandler do
   def handle_event(:start_element, {"airport_name", attrs}, state) do
     attrs = Enum.into(attrs, %{})
 
-    airport = %Charts.Airport{
+    airport = %Airport{
       name: attrs["ID"],
       military: attrs["military"],
       apt_ident: attrs["apt_ident"],
@@ -80,8 +82,7 @@ defmodule Charts.Parser.DTPP.SaxyXMLHandler do
   def handle_event(:start_element, {"record", _attrs}, state) do
     dtpp = state.stack |> Enum.reverse() |> hd()
 
-    {:ok,
-     state |> Map.put(:stack, [%Charts.Chart{airport: hd(state.stack), dtpp: dtpp} | state.stack])}
+    {:ok, state |> Map.put(:stack, [%Chart{airport: hd(state.stack), dtpp: dtpp} | state.stack])}
   end
 
   def handle_event(:start_element, {name, attributes}, state) do
@@ -118,7 +119,7 @@ defmodule Charts.Parser.DTPP.SaxyXMLHandler do
   defp handle_characters(chars, state) do
     state =
       case Enum.take(state.stack, 2) do
-        [{attr, _attributes} = record, %Charts.Chart{} = chart] ->
+        [{attr, _attributes} = record, %Chart{} = chart] ->
           chart =
             chart
             |> Map.put(String.to_atom(attr), chars)

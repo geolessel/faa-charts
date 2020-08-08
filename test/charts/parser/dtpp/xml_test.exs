@@ -1,6 +1,8 @@
-defmodule Charts.Parser.DTPP.XMLTest do
+defmodule FaaCharts.Parser.DTPP.XMLTest do
   use ExUnit.Case, async: true
-  doctest Charts.Parser.DTPP.XML
+  doctest FaaCharts.Parser.DTPP.XML
+
+  alias FaaCharts.{Airport, Chart, City, DTPP, State, Parser}
 
   setup do
     xml = File.stream!("./test/support/dtpp-example.xml", [], 2048)
@@ -10,12 +12,12 @@ defmodule Charts.Parser.DTPP.XMLTest do
   describe "parse_stream" do
     test "finds the dtpp", %{xml_stream: xml_stream} do
       dtpp =
-        with {:ok, result} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, result} <- Parser.DTPP.XML.parse_stream(xml_stream) do
           result
           |> Map.get(:dtpp)
         end
 
-      assert %Charts.DTPP{
+      assert %DTPP{
                cycle: "2008",
                from_edate: "0901Z  07/16/20",
                to_edate: "0901Z  08/13/20"
@@ -26,7 +28,7 @@ defmodule Charts.Parser.DTPP.XMLTest do
       expected = ["AR", "CA"]
 
       states =
-        with {:ok, result} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, result} <- Parser.DTPP.XML.parse_stream(xml_stream) do
           result
           |> Map.get(:states)
           |> Enum.map(& &1.abbreviation)
@@ -40,7 +42,7 @@ defmodule Charts.Parser.DTPP.XMLTest do
       expected = ["CARLSBAD", "CONWAY", "LITTLE ROCK", "OCEANSIDE"]
 
       actual =
-        with {:ok, result} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, result} <- Parser.DTPP.XML.parse_stream(xml_stream) do
           result
           |> Map.get(:cities)
           |> Enum.map(& &1.name)
@@ -52,7 +54,7 @@ defmodule Charts.Parser.DTPP.XMLTest do
 
     test "associates cities with states", %{xml_stream: xml_stream} do
       oceanside =
-        with {:ok, %{cities: cities}} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, %{cities: cities}} <- Parser.DTPP.XML.parse_stream(xml_stream) do
           cities
           |> Enum.find(&(&1.name == "OCEANSIDE"))
         end
@@ -70,7 +72,7 @@ defmodule Charts.Parser.DTPP.XMLTest do
       ]
 
       actual =
-        with {:ok, result} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, result} <- Parser.DTPP.XML.parse_stream(xml_stream) do
           result
           |> Map.get(:airports)
           |> Enum.map(& &1.name)
@@ -82,7 +84,7 @@ defmodule Charts.Parser.DTPP.XMLTest do
 
     test "associates airports with cities", %{xml_stream: xml_stream} do
       conway =
-        with {:ok, %{airports: airports}} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, %{airports: airports}} <- Parser.DTPP.XML.parse_stream(xml_stream) do
           airports
           |> Enum.find(&(&1.icao_ident == "KCXW"))
         end
@@ -92,18 +94,18 @@ defmodule Charts.Parser.DTPP.XMLTest do
 
     test "finds the charts and associates them with airport and dtpp", %{xml_stream: xml_stream} do
       chart =
-        with {:ok, %{charts: charts}} <- Charts.Parser.DTPP.XML.parse_stream(xml_stream) do
+        with {:ok, %{charts: charts}} <- Parser.DTPP.XML.parse_stream(xml_stream) do
           charts
           |> Enum.find(&(&1.pdf_name == "00233IL4L.PDF"))
         end
 
-      assert %Charts.Chart{
-               airport: %Charts.Airport{
+      assert %Chart{
+               airport: %Airport{
                  alnum: "233",
                  apt_ident: "LIT",
-                 city: %Charts.City{
+                 city: %City{
                    name: "LITTLE ROCK",
-                   state: %Charts.State{abbreviation: "AR", name: "Arkansas"},
+                   state: %State{abbreviation: "AR", name: "Arkansas"},
                    volume: "SC-1"
                  },
                  icao_ident: "KLIT",
@@ -113,7 +115,7 @@ defmodule Charts.Parser.DTPP.XMLTest do
                chartseq: "50750",
                chart_code: "IAP",
                chart_name: "ILS OR LOC RWY 04L",
-               dtpp: %Charts.DTPP{
+               dtpp: %DTPP{
                  cycle: "2008",
                  from_edate: "0901Z  07/16/20",
                  to_edate: "0901Z  08/13/20"

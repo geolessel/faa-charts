@@ -1,3 +1,3 @@
-defmodule Charts.State do
+defmodule FaaCharts.State do
   defstruct [:name, :abbreviation]
 end

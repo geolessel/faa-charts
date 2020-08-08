@@ -1,4 +1,4 @@
-defmodule Charts.Chart do
+defmodule FaaCharts.Chart do
   defstruct [
     :airport,
     :chartseq,

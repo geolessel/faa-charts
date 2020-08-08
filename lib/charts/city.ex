@@ -1,3 +1,3 @@
-defmodule Charts.City do
+defmodule FaaCharts.City do
   defstruct [:name, :state, :volume]
 end

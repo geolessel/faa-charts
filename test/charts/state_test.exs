@@ -1,4 +1,4 @@
-defmodule Charts.StateTest do
+defmodule FaaCharts.StateTest do
   use ExUnit.Case
-  doctest Charts.State
+  doctest FaaCharts.State
 end

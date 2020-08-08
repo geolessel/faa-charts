@@ -1,4 +1,4 @@
-defmodule Charts.MixProject do
+defmodule FaaCharts.MixProject do
   use Mix.Project
 
   def project do

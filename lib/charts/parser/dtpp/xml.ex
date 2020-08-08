@@ -1,6 +1,6 @@
-defmodule Charts.Parser.DTPP.XML do
+defmodule FaaCharts.Parser.DTPP.XML do
   def parse_stream(xml_stream) do
-    Saxy.parse_stream(xml_stream, Charts.Parser.DTPP.SaxyXMLHandler, [])
+    Saxy.parse_stream(xml_stream, FaaCharts.Parser.DTPP.SaxyXMLHandler, [])
   end
 
   def parse_stream!(xml_stream) do
