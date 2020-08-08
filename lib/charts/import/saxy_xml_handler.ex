@@ -2,18 +2,34 @@ defmodule Charts.Import.SaxyXMLHandler do
   @behaviour Saxy.Handler
   @initial_state %{
     airports: [],
+    charts: [],
     cities: [],
     states: [],
     stack: []
   }
 
-  def handle_event(:start_document, prolog, _state) do
-    # {:ok, [{:start_document, prolog} | state]}
+  def handle_event(:start_document, _prolog, _state) do
     {:ok, @initial_state}
   end
 
   def handle_event(:end_document, _data, state) do
-    # {:ok, [{:end_document} | state]}
+    {:ok, state}
+  end
+
+  def handle_event(:start_element, {"digital_tpp", attrs}, state) do
+    attrs = Enum.into(attrs, %{})
+
+    dtpp = %Charts.DTPP{
+      cycle: attrs["cycle"],
+      from_edate: attrs["from_edate"],
+      to_edate: attrs["to_edate"]
+    }
+
+    state =
+      state
+      |> Map.put(:dtpp, dtpp)
+      |> Map.put(:stack, [dtpp | state.stack])
+
     {:ok, state}
   end
 
@@ -61,13 +77,27 @@ defmodule Charts.Import.SaxyXMLHandler do
     {:ok, state}
   end
 
+  def handle_event(:start_element, {"record", _attrs}, state) do
+    dtpp = state.stack |> Enum.reverse() |> hd()
+
+    {:ok,
+     state |> Map.put(:stack, [%Charts.Chart{airport: hd(state.stack), dtpp: dtpp} | state.stack])}
+  end
+
   def handle_event(:start_element, {name, attributes}, state) do
     {:ok, [{:start_element, name, attributes} | state]}
 
-    # IO.inspect({name, attributes}, label: "unhandled start element")
-
     stack = [{name, attributes} | state.stack]
     {:ok, Map.put(state, :stack, stack)}
+  end
+
+  def handle_event(:end_element, "record", state) do
+    state =
+      state
+      |> Map.put(:charts, [hd(state.stack) | state.charts])
+      |> Map.put(:stack, tl(state.stack))
+
+    {:ok, state}
   end
 
   def handle_event(:end_element, name, state) do
@@ -78,7 +108,6 @@ defmodule Charts.Import.SaxyXMLHandler do
   end
 
   def handle_event(:characters, chars, state) do
-    # {:ok, [{:chacters, chars} | state]}
     chars
     |> String.trim()
     |> handle_characters(state)
@@ -87,7 +116,23 @@ defmodule Charts.Import.SaxyXMLHandler do
   defp handle_characters("", state), do: {:ok, state}
 
   defp handle_characters(chars, state) do
-    # IO.inspect(chars, label: "unhandled characters")
+    state =
+      case Enum.take(state.stack, 2) do
+        [{attr, _attributes} = record, %Charts.Chart{} = chart] ->
+          chart =
+            chart
+            |> Map.put(String.to_atom(attr), chars)
+
+          state
+          |> Map.update(:stack, [], fn stack ->
+            stack = Enum.drop(stack, 2)
+            [record | [chart | stack]]
+          end)
+
+        _ ->
+          state
+      end
+
     {:ok, state}
   end
 end
