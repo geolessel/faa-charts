@@ -1,21 +1,27 @@
-defmodule EasyFAA.MixProject do
+defmodule Charts.MixProject do
   use Mix.Project
 
   def project do
     [
-      apps_path: "apps",
+      app: :faa_charts,
       version: "0.1.0",
+      elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
   end
 
-  # Dependencies listed here are available only for this
-  # project and cannot be accessed from applications inside
-  # the apps folder.
-  #
-  # Run "mix help deps" for examples and options.
+  # Run "mix help compile.app" to learn about applications.
+  def application do
+    [
+      extra_applications: [:logger]
+    ]
+  end
+
+  # Run "mix help deps" to learn about dependencies.
   defp deps do
-    []
+    [
+      {:saxy, "~> 1.2"}
+    ]
   end
 end

@@ -1,5 +1,5 @@
 defmodule ChartsTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Charts
 
   test "greets the world" do
