@@ -10,7 +10,7 @@ by adding `faa_charts` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:faa_charts, "~> 0.1.0"}
+    {:faa_charts, "~> 0.1.1"}
   ]
 end
 ```
